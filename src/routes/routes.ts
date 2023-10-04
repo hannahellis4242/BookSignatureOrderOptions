@@ -4,6 +4,8 @@ import { StatusCodes } from "http-status-codes";
 import { v4 } from "uuid";
 import { ProblemSchema } from "../model/Problem";
 import solve from "../solver/solve";
+import { z } from "zod";
+import { generateErrorMessage } from "zod-error";
 
 const routes = Router();
 
@@ -11,15 +13,18 @@ const client = createClient({
   url: "redis://redis:6379",
 });
 
+const BodySchema = z.object({ problem: ProblemSchema });
+
 routes.post("/", async (req, res) => {
-  const problem = ProblemSchema.safeParse(req.body);
+  const problem = BodySchema.safeParse(req.body);
   if (!problem.success) {
-    res.status(StatusCodes.BAD_REQUEST).json(problem.error.issues);
+    const errorMessage = generateErrorMessage(problem.error.issues);
+    res.status(StatusCodes.BAD_REQUEST).send(errorMessage);
     return;
   }
   try {
     await client.connect();
-    const solution = solve(problem.data);
+    const solution = solve(problem.data.problem);
     const key = v4();
     await client.set(key, JSON.stringify(solution), { EX: 120 });
     res.send(key);
