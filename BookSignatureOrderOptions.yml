@@ -1,0 +1,103 @@
+openapi: 3.0.0
+info:
+  title: BookSignatureOrderOptions
+  description: An API that provides all the possible ways you can uniquely order the given number of signature sizes
+  version: 2.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: localhost
+
+paths:
+  /:
+    post:
+      summary: Retrieve a solution key for the given problem
+      description: Will solve for the given parameters in the body and respond with a solution key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Key'
+        '400':
+          description: BAD REQUEST
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: error
+          content:
+            text/plain:
+              schema:
+                type: string
+    get:
+      summary: Retrieve the solution for a given key
+      description: Will give the solution for the requested key
+      parameters:
+        - name: key
+          in: query
+          description: solution key to look for
+          required: true
+          schema:
+            $ref: "#/components/schemas/Key"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Solutions"
+        '400':
+          description: BAD REQUEST
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: solution not found with given key
+        '500':
+          description: internal server error
+    
+components:
+  schemas:
+    Key:
+      type: string
+    SignatureSizeAndCount:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int64
+          minimum: 1
+        count:
+          type: integer
+          format: int64
+          minimum: 1
+      required:
+        - "size"
+        - "count"
+    Problem:
+      type: array
+      items:
+        $ref: "#/components/schemas/SignatureSizeAndCount"
+      minItems: 1
+    Solution:
+      type: array
+      items:
+        type: integer
+        format: int64
+        minimum: 1
+      minItems: 1
+    Solutions:
+      type: array
+      items:
+        $ref: "#/components/schemas/Solution"
+      minItems: 1
