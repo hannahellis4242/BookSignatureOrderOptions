@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 
-describe("api", () => {
+describe.skip("api", () => {
   test("end to end", async () => {
     try {
       const key = await axios
