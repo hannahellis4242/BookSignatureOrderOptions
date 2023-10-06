@@ -56,12 +56,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Solutions"
-        '400':
-          description: BAD REQUEST
-          content:
-            text/plain:
-              schema:
-                type: string
         '404':
           description: solution not found with given key
         '500':
