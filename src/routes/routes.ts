@@ -14,13 +14,16 @@ const client = createClient({
 routes.post("/", async (req, res) => {
   const problem = ProblemSchema.safeParse(req.body);
   if (!problem.success) {
-    res.status(StatusCodes.BAD_REQUEST).json(problem.error.issues);
+    const errorMessage = problem.error.issues
+      .map((issue) => issue.message)
+      .join("\n");
+    res.status(StatusCodes.BAD_REQUEST).send(errorMessage);
     return;
   }
   try {
     await client.connect();
     const solution = solve(problem.data);
-    const key = v4();
+    const key = v4().replaceAll("-", "");
     await client.set(key, JSON.stringify(solution), { EX: 120 });
     res.send(key);
   } catch (e) {
@@ -31,14 +34,8 @@ routes.post("/", async (req, res) => {
   }
 });
 
-routes.get("/", async (req, res) => {
-  const { key } = req.query;
-  if (!key) {
-    res
-      .status(StatusCodes.BAD_REQUEST)
-      .send("expect a query parameter called key");
-    return;
-  }
+routes.get("/:key", async (req, res) => {
+  const { key } = req.params;
   try {
     await client.connect();
     const solution = await client.get(key.toString());

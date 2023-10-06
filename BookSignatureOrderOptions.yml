@@ -38,12 +38,13 @@ paths:
             text/plain:
               schema:
                 type: string
+  /{key}:
     get:
       summary: Retrieve the solution for a given key
       description: Will give the solution for the requested key
       parameters:
         - name: key
-          in: query
+          in: path
           description: solution key to look for
           required: true
           schema:
@@ -55,12 +56,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Solutions"
-        '400':
-          description: BAD REQUEST
-          content:
-            text/plain:
-              schema:
-                type: string
         '404':
           description: solution not found with given key
         '500':
